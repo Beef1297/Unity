@@ -1,2 +1,2 @@
 # Unity
-Unity Project
+Unity で作った プロジェクトを随意アップロードしていくリポジトリ
