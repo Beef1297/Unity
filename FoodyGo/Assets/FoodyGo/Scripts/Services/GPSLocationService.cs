@@ -1,4 +1,5 @@
 ﻿using packt.FoodyGo.Utils;
+using packt.FoodyGO.Managers;
 using packt.FoodyGO.Mapping;
 using System.Collections;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine;
 namespace packt.FoodyGO.Services
 {
     [AddComponentMenu("Services/GPSLocationService")]
-    public class GPSLocationService : MonoBehaviour
+    public class GPSLocationService : Singleton<GPSLocationService>
     {
         //Redraw Event
         public delegate void OnRedrawEvent(GameObject g);
@@ -30,7 +31,7 @@ namespace packt.FoodyGO.Services
         [Header("Exposed for GPS Debugging Purposes Only")]
         public bool IsServiceStarted;
         public float Latitude;
-        public float Longitude;
+        public float Longitude;        
         public float Altitude;
         public float Accuracy;
         public double Timestamp;
@@ -189,6 +190,14 @@ namespace packt.FoodyGO.Services
         {
             if (IsServiceStarted)
                 Input.location.Stop();
+        }
+
+        public MapLocation Location
+        {
+            get
+            {
+                return new MapLocation(Longitude, Latitude);
+            }
         }
     }
 }

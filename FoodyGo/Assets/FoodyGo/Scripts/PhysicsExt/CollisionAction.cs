@@ -8,7 +8,7 @@ namespace packt.FoodyGO.PhysicsExt
     {        
         private CollisionReaction[] reactions;
                
-        public bool disarmed = true;//手に持っているかどうか
+        public bool disarmed = true;
 
         void OnCollisionEnter(Collision collision)
         {
@@ -19,7 +19,7 @@ namespace packt.FoodyGO.PhysicsExt
                 {
                     foreach (var reaction in reactions)
                     {
-                        if (gameObject.name.StartsWith(reaction.collisionObjectName))//衝突を処理したいのか判定
+                        if (gameObject.name.StartsWith(reaction.collisionObjectName))
                         {
                             reaction.OnCollisionReaction(gameObject, collision);
                         }

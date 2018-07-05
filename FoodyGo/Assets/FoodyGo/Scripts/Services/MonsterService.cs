@@ -10,7 +10,6 @@ namespace packt.FoodyGO.Services
 {
     public class MonsterService : MonoBehaviour
     {
-        public GPSLocationService gpsLocationService;
         public GameObject monsterPrefab;
         private double lastTimestamp;
 
@@ -29,20 +28,20 @@ namespace packt.FoodyGO.Services
         public float twoStepRange = 150f;
         public float threeStepRange = 200f;
 
-        public List<Monster> monsters;
+        public List<MonsterSpawnLocation> monsters;
         
         // Use this for initialization
         void Start()
         {
-            monsters = new List<Monster>();
+            monsters = new List<MonsterSpawnLocation>();
             StartCoroutine(CleanupMonsters());
-            gpsLocationService.OnMapRedraw += GpsLocationService_OnMapRedraw;
+            GPSLocationService.Instance.OnMapRedraw += GpsLocationService_OnMapRedraw;
         }
 
         private void GpsLocationService_OnMapRedraw(GameObject g)
         {
             //map is recentered, recenter all monsters
-            foreach(Monster m in monsters)
+            foreach(MonsterSpawnLocation m in monsters)
             {
                 if(m.gameObject != null)
                 {
@@ -63,26 +62,31 @@ namespace packt.FoodyGO.Services
                     if(list[i].spawnTimestamp + monsterLifetimeSeconds < now)
                     {
                         var monster = list[i];
-                        print("Cleaning up monster");
-                        if(monster.gameObject != null)
-                        {
-                            Destroy(monster.gameObject);
-                        }
-                        monsters.Remove(monster);
+                        RemoveMonster(monster);
                     }
                 }
                 yield return new WaitForSeconds(5);
             }
         }
 
+        public void RemoveMonster(MonsterSpawnLocation monster)
+        {
+            print("Cleaning up monster ");
+            if (monster.gameObject != null)
+            {
+                Destroy(monster.gameObject);
+            }
+            monsters.Remove(monster);
+        }
+
         // Update is called once per frame
         void Update()
         {
-            if (gpsLocationService != null &&
-                gpsLocationService.IsServiceStarted &&
-                gpsLocationService.PlayerTimestamp > lastTimestamp)
+            if (GPSLocationService.Instance != null &&
+                GPSLocationService.Instance.IsServiceStarted &&
+                GPSLocationService.Instance.PlayerTimestamp > lastTimestamp)
             {
-                lastTimestamp = gpsLocationService.PlayerTimestamp;
+                lastTimestamp = GPSLocationService.Instance.PlayerTimestamp;
 
                 //update the monsters around the player
                 CheckMonsters();
@@ -93,22 +97,22 @@ namespace packt.FoodyGO.Services
         {            
             if (Random.value > monsterSpawnRate)
             {
-                var mlat = gpsLocationService.Latitude + Random.Range(-latitudeSpawnOffset, latitudeSpawnOffset);
-                var mlon = gpsLocationService.Longitude + Random.Range(-longitudeSpawnOffset, longitudeSpawnOffset);
-                var monster = new Monster
+                var mlat = GPSLocationService.Instance.Latitude + Random.Range(-latitudeSpawnOffset, latitudeSpawnOffset);
+                var mlon = GPSLocationService.Instance.Longitude + Random.Range(-longitudeSpawnOffset, longitudeSpawnOffset);
+                var monster = new MonsterSpawnLocation
                 {
                     location = new MapLocation(mlon, mlat),
-                    spawnTimestamp = gpsLocationService.PlayerTimestamp
+                    spawnTimestamp = GPSLocationService.Instance.PlayerTimestamp
                 };
                 monsters.Add(monster);
             }
 
             //store players location for easy access in distance calculations
-            var playerLocation = new MapLocation(gpsLocationService.Longitude, gpsLocationService.Latitude);
+            var playerLocation = new MapLocation(GPSLocationService.Instance.Longitude, GPSLocationService.Instance.Latitude);
             //get the current Epoch time in seconds
             var now = Epoch.Now;
 
-            foreach (Monster m in monsters)
+            foreach (MonsterSpawnLocation m in monsters)
             {
                 var d = MathG.Distance(m.location, playerLocation);
                 if (MathG.Distance(m.location, playerLocation) < monsterSeeDistance)
@@ -151,17 +155,19 @@ namespace packt.FoodyGO.Services
             return 4;
         }
 
+        
+
         private Vector3 ConvertToWorldSpace(float longitude, float latitude)
         {
             //convert GPS lat/long to world x/y 
             var x = ((GoogleMapUtils.LonToX(longitude)
-                - gpsLocationService.mapWorldCenter.x) * gpsLocationService.mapScale.x);
+                - GPSLocationService.Instance.mapWorldCenter.x) * GPSLocationService.Instance.mapScale.x);
             var y = (GoogleMapUtils.LatToY(latitude)
-                - gpsLocationService.mapWorldCenter.y) * gpsLocationService.mapScale.y;
+                - GPSLocationService.Instance.mapWorldCenter.y) * GPSLocationService.Instance.mapScale.y;
             return new Vector3(-x, 0, y);
         }
 
-        private void SpawnMonster(Monster monster)
+        private void SpawnMonster(MonsterSpawnLocation monster)
         {            
             var lon = monster.location.Longitude;
             var lat = monster.location.Latitude;
@@ -169,8 +175,10 @@ namespace packt.FoodyGO.Services
             var rotation = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.up);
             monster.gameObject = (GameObject)Instantiate(monsterPrefab, position, rotation);
             var controller = monster.gameObject.AddComponent<MonsterController>();
-            controller.monsterDataObject = monster;
+            controller.monsterSpawnLocation = monster;
             controller.monsterService = this;
+            monster.gameObject.transform.parent = transform;
         }
+        
     }
 }

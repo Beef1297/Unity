@@ -20,9 +20,10 @@ namespace packt.FoodyGO.PhysicsExt
             Quaternion rot = Quaternion.FromToRotation(Vector3.up, contact.normal);
             Vector3 pos = contact.point;
 
-            if (particlePrefab != null)//particlePrefabがセットされていれば発動,インスタンスを生成
-            {//方向と位置を決定し、パーティクルを生成するのが仕事みたいな感じ
+            if (particlePrefab != null)
+            {
                 var particle = (Transform)Instantiate(particlePrefab, pos, rot);
+                particle.parent = transform;
                 Destroy(particle.gameObject, destroyParticleDelaySeconds);
             }
             if (destroyObject)
@@ -30,11 +31,11 @@ namespace packt.FoodyGO.PhysicsExt
                 Destroy(go, destroyObjectDelaySeconds);
             }
 
-            collisionEvent.Invoke(gameObject, collision);//衝突イベントを処理するあらゆるリスナーにイベントの内容を渡す.
+            collisionEvent.Invoke(gameObject, collision);
         }        
     }
 
-    [System.Serializable]//衝突が起きたことを知らせる、コンポーネントをつなげる？？
+    [System.Serializable]
     public class CollisionEvent : UnityEvent<GameObject, Collision>
     {
 
