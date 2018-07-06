@@ -40,9 +40,10 @@ namespace packt.FoodyGO.Services
         public MapEnvelope mapEnvelope;        
         public Vector3 mapWorldCenter;
         public Vector2 mapScale;
-        
+        public MapEnvelope mapBounds;
 
-		//initialize the object
+
+        //initialize the object
         void Start()
         {
             print("Starting GPSLocationService");
@@ -183,6 +184,14 @@ namespace packt.FoodyGO.Services
             var lat2 = GoogleMapUtils.adjustLatByPixels(Latitude, -MapTileSizePixels/2, MapTileZoomLevel);
 
             mapEnvelope = new MapEnvelope(lon1, lat1, lon2, lat2);
+
+            lon1 = GoogleMapUtils.adjustLonByPixels(Longitude, -MapTileSizePixels*3/2 , MapTileZoomLevel);
+            lat1 = GoogleMapUtils.adjustLatByPixels(Latitude, MapTileSizePixels*3/2 , MapTileZoomLevel);
+
+            lon2 = GoogleMapUtils.adjustLonByPixels(Longitude, MapTileSizePixels*3/2 , MapTileZoomLevel);
+            lat2 = GoogleMapUtils.adjustLatByPixels(Latitude, -MapTileSizePixels*3/2 , MapTileZoomLevel);
+
+            mapBounds = new MapEnvelope(lon1, lat1, lon2, lat2);
         }
 
         //called when the object is destroyed

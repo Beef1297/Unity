@@ -45,7 +45,7 @@ namespace packt.FoodyGO.Services
             var queryString = string.Format("location={0}&radius={1}&type={2}&key={3}"
                 , GPSLocationService.Instance.Location.LatLong, visualDistance, type, APIKey);            
             
-            var req = UnityWebRequest.Get(GOOGLE_PLACES_NEARBY_SEARCH_URL + "?" + queryString);
+            var req = UnityWebRequest.Get(GOOGLE_PLACES_RADAR_SEARCH_URL + "?" + queryString);
             //yield until the service responds
             yield return req.Send();
             var json = req.downloadHandler.text;
@@ -94,6 +94,12 @@ namespace packt.FoodyGO.Services
             {                
                 var lon = s.geometry.location.lng;
                 var lat = s.geometry.location.lat;
+                
+                if(GPSLocationService.Instance.mapBounds.Contains(new MapLocation((float)lon, (float)lat))==false)
+                {
+                    continue;
+                }
+
                 var pos = ConvertToWorldSpace(lon, lat);
                 if (places.ContainsKey(s.id))
                 {
