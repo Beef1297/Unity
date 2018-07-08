@@ -18,7 +18,7 @@ namespace packt.FoodyGO.Controllers
         // Use this for initialization
         void Start()
         {
-            anim = GetComponentInChildren<Animation>();
+            anim = GetComponent<Animation>();
             anim["Walk_Loop"].speed = animationSpeed;
         }
     
